@@ -14,7 +14,7 @@ import workflow_glue.diversity as diversity
 
 RANK_ORDER = {
     'superkingdom': 1, 'kingdom': 2, 'phylum': 3, 'class': 4, 'order': 5, 'family': 6,
-    'genus': 7, 'species': 8}
+    'genus': 7, 'species': 8, 'NA':9}
 
 RANKS = list(RANK_ORDER.keys())
 
@@ -78,17 +78,23 @@ def split_taxonomy_string(counts_per_taxa_df, set_index=False):
     :return (DataFrame): Return a new dataFrame with counts per specific rank with
             a new column per specific rank.
     """
-    taxonomy_ranks = counts_per_taxa_df.tax.str.split(';', expand=True)
-    # Convert numbers to normal rank names
-    taxonomy_ranks.columns = [RANKS[i] for i in range(taxonomy_ranks.shape[1])]
-    df_ranks = pd.concat([counts_per_taxa_df, taxonomy_ranks], axis=1)
-    if set_index:
-        ranks = taxonomy_ranks.columns
-        df_ranks = df_ranks.set_index(ranks[-1])
-    return df_ranks
+    if not counts_per_taxa_df.empty:
+       taxonomy_ranks = counts_per_taxa_df.tax.str.split(';', expand=True)
+       shape_val=taxonomy_ranks.shape[1]
+       if any(x is None for x in taxonomy_ranks ):
+          shape_val=taxonomy_ranks.shape[1] -1
+       print(f"RANK: {RANKS}")
+       # Convert numbers to normal rank names
+       taxonomy_ranks.columns = [RANKS[i] for i in range(shape_val)]
+       df_ranks = pd.concat([counts_per_taxa_df, taxonomy_ranks], axis=1)
+       if set_index:
+          ranks = taxonomy_ranks.columns
+          print(f" Rank col : {ranks}")
+          df_ranks = df_ranks.set_index(ranks[-1])
+       return df_ranks
 
 
-def most_abundant_table(counts_per_taxa_df, n=10, percent=False):
+def most_abundant_table(counts_per_taxa_df, n=5, percent=False):
     """Select most abundant taxa and group the rest into 'Other' taxa.
 
     :param counts_per_taxa_df (DataFrame): DataFrame with counts per specific rank.
@@ -104,7 +110,7 @@ def most_abundant_table(counts_per_taxa_df, n=10, percent=False):
     most_abundant_taxa = counts_per_taxa_df[:n]
     less_abundant_taxa = counts_per_taxa_df[n:].sum().to_dict()
     less_abundant_taxa['tax'] = 'Other' + ';Other' * (
-        len(most_abundant_taxa['tax'].iloc[0].split(';'))-1)
+        len(most_abundant_taxa['tax'].iloc[0].split(';')))
     if less_abundant_taxa['total'] > 1:  # no "other" taxa
         other = pd.DataFrame(less_abundant_taxa,  index=['Other'])
         # Concat other to most abundant, this is data for plotting
@@ -152,6 +158,7 @@ def filter_by_abundance(
         abundance_threshold = round(
             abundance_threshold * df[column_to_filter].sum())
     # Group & filter them
+    print(f"Abun thres - {abundance_threshold}")
     if columns_to_group:
         # Subset just columns that are going to be used
         # E.g. not use lineages columns

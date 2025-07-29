@@ -220,6 +220,8 @@ def main(args):
                 counts_per_taxa_df, 'total', abundance_threshold)
             ranks_counts_filtered.append(counts_per_taxa_df_filtered)
             ranks_counts = counts_per_taxa_df  # save last table
+    cm=pd.concat(ranks_counts_filtered)
+    cm.to_csv('data.txt',sep='\t', index=False, header=True)
     # Write report
     with report.add_section('Taxonomy', 'Taxonomy'):
         tabs = Tabs()
@@ -227,7 +229,8 @@ def main(args):
         with tabs.add_dropdown_menu('Rank', change_header=True):
             for i, counts_per_taxa_per_rank_df in enumerate(ranks_counts_filtered):
                 with tabs.add_dropdown_tab(ranks_no_sk_k[i]):
-                    logger.info(f"rank {ranks_no_sk_k[i]}.")
+                 if not counts_per_taxa_per_rank_df.empty:
+
                     most_abundant = report_utils.most_abundant_table(
                         counts_per_taxa_per_rank_df,
                         n=n_taxa_barplot,
@@ -277,24 +280,26 @@ def main(args):
                         html_tags.code("abundance_threshold"),
                         " parameter will appear in the table."
                     )
-                    export_table = report_utils.split_taxonomy_string(
-                        counts_per_taxa_per_rank_df, set_index=True)
-                    # Move tax column to end to not spoil visualization
-                    temp_cols = export_table.columns.tolist()
-                    new_cols = temp_cols[1:] + temp_cols[0:1]
-                    export_table = export_table[new_cols]
-                    # Table to report with the export option
-                    DataTable.from_pandas(
-                        export_table,
-                        export=True,
-                        file_name=(
-                            f'{args.workflow_name}-counts-{ranks_no_sk_k[i]}'
-                        )
-                    )
+                    if not counts_per_taxa_per_rank_df.empty:
+                       export_table = report_utils.split_taxonomy_string(
+                           counts_per_taxa_per_rank_df, set_index=True)
+                       # Move tax column to end to not spoil visualization
+                       temp_cols = export_table.columns.tolist()
+                       new_cols = temp_cols[1:] + temp_cols[0:1]
+                       export_table = export_table[new_cols]
+                       # Table to report with the export option
+                       DataTable.from_pandas(
+                           export_table,
+                           export=True,
+                           file_name=(
+                               f'{args.workflow_name}-counts-{ranks_no_sk_k[i]}'
+                           )
+                       )
         # 2.5. RAREFIED ABUNDANCE TABLE
         with tabs.add_dropdown_menu('Rarefied Abundance tables', change_header=False):
             for i, counts_per_taxa_per_rank_df in enumerate(ranks_counts_filtered):
                 with tabs.add_dropdown_tab(ranks_no_sk_k[i]):
+                  if not counts_per_taxa_per_rank_df.empty:
                     p(f"Rarefied abundance table for the \
                       {ranks_no_sk_k[i]} rank.")
                     p("""
