@@ -395,7 +395,7 @@
             "properties": {
                 "abundance_threshold": {
                     "type": "number",
-                    "default": 0,
+                    "default": 1,
                     "title": "Abundance threshold",
                     "description": "Remove those taxa whose abundance is equal or lower than the chosen value.",
                     "help_text": "To remove taxa with abundances lower than or equal to a relative value (compared to the total number of reads) use a decimal between 0-1 (1 not inclusive). To remove taxa with abundances lower than or equal to an absolute value, provide a number larger or equal to 1."
