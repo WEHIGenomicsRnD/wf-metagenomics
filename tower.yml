@@ -1,0 +1,4 @@
+reports:
+  "**/wf-metagenomics-report.html":
+    display : "16s-Report"
+
