@@ -227,7 +227,7 @@ process makeReport {
     label "wf_common"
     publishDir "${params.out_dir}", mode: 'copy', pattern: "${report_name}"
     cpus 1
-    memory "4 GB"
+    memory "20 GB"
     input:
         val wf_version
         val metadata
