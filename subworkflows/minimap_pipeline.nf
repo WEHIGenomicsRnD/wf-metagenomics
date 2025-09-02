@@ -90,7 +90,7 @@ process minimapTaxonomy {
     label "wfmetagenomics"
     tag "${meta.alias}"
     cpus 1
-    publishDir "${params.out_dir}/reads_assignments", mode: 'copy', pattern: "*_lineages.minimap2.assignments.tsv", enabled: params.include_read_assignments
+    publishDir "${params.out_dir}/reads_assignments", mode: 'copy', pattern: "*_lineages.minimap2.assignments.tsv" , enabled: params.include_read_assignments
     memory 4.GB
     input:
         tuple(
@@ -109,6 +109,12 @@ process minimapTaxonomy {
             path("${meta.alias}.unclassified.txt"),
             emit: unclassified_ids
         )
+        tuple(
+            val(meta),
+            path("${meta.alias}_lineages.minimap2.assignments.tsv"),
+            emit: lineage_assignment,
+            optional:true
+         )
     script:
     String taxid_col = 3
     """
@@ -314,6 +320,7 @@ workflow minimap_pipeline {
                 }
             publishReads(unclassified_to_extract, "unclassified")
         }
+
         // Use initial reads stats (after fastcat) QC, but update meta
         for_report = samples
         | map{
